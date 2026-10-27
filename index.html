@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#7c0e44" />
+    <meta
+      name="description"
+      content="Offline-first point of sale billing system"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="css/style.css" />
+    <title>NxOs POS — Offline Billing</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <img src="assets/teapost.png" alt="logo" />
+          </div>
+          <div><strong>Teapost Desi</strong><small>OFFLINE BILLING</small></div>
+        </div>
+        <nav class="nav">
+          <button class="nav-link active" data-page="billing">
+            <span>▦</span> Billing
+          </button>
+          <button class="nav-link" data-page="products">
+            <span>◈</span> Products
+          </button>
+          <button class="nav-link" data-page="history">
+            <span>▤</span> Sales history
+          </button>
+          <button class="nav-link" data-page="reports">
+            <span>▥</span> Reports & export
+          </button>
+          <button class="nav-link" data-page="settings">
+            <span>⚙</span> Settings & backup
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <span class="online-dot"></span><span>Local device storage</span
+          ><small id="connectionLabel">Offline-ready</small>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <button
+            class="icon-button mobile-menu"
+            id="menuBtn"
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+          <div>
+            <p class="eyebrow" id="pageEyebrow">POINT OF SALE</p>
+            <h1 id="pageTitle">New bill</h1>
+          </div>
+          <div class="top-actions">
+            <span class="storage-pill"
+              ><span class="online-dot"></span> Saved on this device</span
+            ><button class="button button-soft" id="quickNewBill">
+              ＋ New bill
+            </button>
+          </div>
+        </header>
+
+        <section class="page active" id="page-billing">
+          <div class="billing-layout">
+            <div class="panel product-picker">
+              <div class="panel-head">
+                <div>
+                  <h2>Choose items</h2>
+                  <p>Tap a product to add it to the bill.</p>
+                </div>
+                <span class="count-badge" id="availableCount">0 items</span>
+              </div>
+              <label class="searchbox"
+                ><span>⌕</span
+                ><input
+                  id="productSearch"
+                  placeholder="Search products…"
+                  autocomplete="off"
+              /></label>
+              <div class="category-row" id="categoryRow">
+                <button class="chip selected" data-category="All">
+                  All items
+                </button>
+              </div>
+              <div class="product-grid" id="productGrid"></div>
+              <div class="empty-state hidden" id="noProducts">
+                No products found. Add products in Product management.
+              </div>
+            </div>
+            <button class="cart-fab" id="openCart" type="button" aria-label="Open current order">
+              <span class="cart-fab-icon">🛒</span>
+              <span class="cart-fab-copy"><b>Cart</b><small id="cartFabSummary">0 items · ₹0</small></span>
+              <span class="cart-fab-count" id="cartFabCount">0</span>
+            </button>
+            <div class="order-backdrop" id="orderBackdrop"></div>
+            <div class="panel checkout-panel" id="checkoutPanel">
+              <div class="panel-head order-drawer-head">
+                <div>
+                  <p class="eyebrow">BILL</p>
+                  <h2>Current order</h2>
+                  <p id="cartSubtitle">No items added yet</p>
+                </div>
+                <div class="order-head-actions">
+                  <button class="text-button danger-text" id="clearCart">Clear</button>
+                  <button class="icon-button order-close" id="closeCart" aria-label="Close current order">×</button>
+                </div>
+              </div>
+              <div class="customer-grid">
+                <label
+                  >Customer name<input
+                    id="customerName"
+                    placeholder="Walk-in customer"
+                    maxlength="120"
+                /></label>
+                <label
+                  >Mobile number<input
+                    id="customerMobile"
+                    placeholder="Optional"
+                    inputmode="tel"
+                    maxlength="20"
+                /></label>
+                <label
+                  >Table number<input
+                    id="tableNumber"
+                    placeholder="e.g. 04"
+                    maxlength="30"
+                /></label>
+                <label
+                  >Payment method<select id="paymentMethod">
+                    <option value="Cash">Cash</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Card">Card</option>
+                  </select></label
+                >
+              </div>
+              <div class="cart-heading">
+                <span>Item</span><span>Qty</span><span>Amount</span
+                ><span></span>
+              </div>
+              <div id="cartItems" class="cart-items">
+                <div class="cart-empty">
+                  Your order is empty.<br /><span
+                    >Select products to begin.</span
+                  >
+                </div>
+              </div>
+              <div class="tax-row">
+                <label class="toggle-label"
+                  ><input type="checkbox" id="gstEnabled" checked /><span
+                    class="toggle-ui"
+                  ></span
+                  ><span>Apply GST</span></label
+                ><label class="gst-select"
+                  >Rate
+                  <select id="gstRate">
+                    <option value="5">5%</option>
+                    <option value="12">12%</option>
+                    <option value="18">18%</option>
+                    <option value="28">28%</option>
+                  </select></label
+                >
+              </div>
+              <div class="totals">
+                <div>
+                  <span>Subtotal (before GST)</span
+                  ><strong id="subtotalValue">₹0.00</strong>
+                </div>
+                <div>
+                  <span>GST <small id="gstLabel">(5%)</small></span
+                  ><strong id="gstValue">₹0.00</strong>
+                </div>
+                <div class="rounding-row">
+                  <span>Rounding adjustment</span
+                  ><strong id="roundingValue">₹0</strong>
+                </div>
+                <div class="grand-total">
+                  <span>Total payable</span><strong id="grandTotal">₹0</strong>
+                </div>
+              </div>
+              <button
+                class="button button-primary button-full"
+                id="completeSale"
+              >
+                Complete sale & print <span>→</span>
+              </button>
+              <p class="microcopy">
+                Bill number and timestamp are generated when the sale is saved.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-products">
+          <div class="section-toolbar">
+            <div>
+              <h2>Product management</h2>
+              <p>Maintain item names and prices before GST.</p>
+            </div>
+            <button class="button button-primary" id="addProductBtn">
+              ＋ Add product
+            </button>
+          </div>
+          <div class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item name</th>
+                    <th>Category</th>
+                    <th>Price before GST</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="productsTable"></tbody>
+              </table>
+            </div>
+            <div class="empty-state hidden" id="emptyProducts">
+              No products yet. Add your first item.
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-history">
+          <div class="section-toolbar">
+            <div>
+              <h2>Sales history</h2>
+              <p>
+                Every saved bill remains on this device until deleted or browser
+                data is cleared.
+              </p>
+            </div>
+            <button class="button button-soft" id="historyExport">
+              Export filtered Excel
+            </button>
+          </div>
+          <div class="panel filters-panel">
+            <div class="filters-grid">
+              <label
+                >From date & time<input
+                  type="datetime-local"
+                  id="historyFrom" /></label
+              ><label
+                >To date & time<input
+                  type="datetime-local"
+                  id="historyTo" /></label
+              ><label
+                >Search bills<input
+                  id="historySearch"
+                  placeholder="Bill no., name, mobile, table…" /></label
+              ><label
+                >Payment<select id="historyPayment">
+                  <option value="">All methods</option>
+                  <option>Cash</option>
+                  <option>UPI</option>
+                  <option>Card</option>
+                </select></label
+              >
+            </div>
+            <div class="filter-actions">
+              <button class="button button-primary" id="applyHistoryFilters">
+                Apply filters</button
+              ><button class="button button-soft" id="resetHistoryFilters">
+                Reset</button
+              ><span id="historyCount" class="muted"></span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bill no.</th>
+                    <th>Date & time</th>
+                    <th>Customer</th>
+                    <th>Table</th>
+                    <th>Payment</th>
+                    <th>Total</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+              </table>
+            </div>
+            <div class="empty-state hidden" id="emptyHistory">
+              No bills match these filters.
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-reports">
+          <div class="section-toolbar">
+            <div>
+              <h2>Reports & export</h2>
+              <p>Export a date/time range to an Excel-compatible workbook.</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span>Filtered sales</span><strong id="reportSales">₹0</strong
+              ><small id="reportBills">0 bills</small>
+            </div>
+            <div class="stat-card">
+              <span>Items sold</span><strong id="reportItems">0</strong
+              ><small>Units across selected bills</small>
+            </div>
+            <div class="stat-card">
+              <span>GST collected</span><strong id="reportGst">₹0.00</strong
+              ><small>Recorded GST amount</small>
+            </div>
+          </div>
+          <div class="panel export-panel">
+            <div>
+              <h2>Choose export period</h2>
+              <p>
+                Workbook includes <b>Bills</b> and <b>Bill Items</b> worksheets.
+                Excel-compatible SpreadsheetML format works offline.
+              </p>
+            </div>
+            <div class="filters-grid">
+              <label
+                >From date & time<input
+                  type="datetime-local"
+                  id="reportFrom" /></label
+              ><label
+                >To date & time<input type="datetime-local" id="reportTo"
+              /></label>
+            </div>
+            <div class="export-actions">
+              <button class="button button-primary" id="exportWorkbook">
+                ↓ Export Excel workbook</button
+              ><button class="button button-soft" id="exportCsv">
+                Export bills as CSV</button
+              ><button class="button button-danger" id="closeBusinessDay">
+                Close day & reset bills
+              </button>
+            </div>
+            <p class="microcopy">
+              The workbook is saved as .xls (Excel XML format) so no external
+              library or internet connection is needed. Export first, then use
+              <b>Close day & reset bills</b> to clear today's sales and restart
+              at BILL-000001. Products are kept.
+            </p>
+          </div>
+          <div class="panel report-note">
+            <h3>What is included?</h3>
+            <ul>
+              <li>
+                Bill number, date, time, customer, mobile, table and payment
+                method.
+              </li>
+              <li>
+                Subtotal, GST rate, GST amount, rounding adjustment and final
+                payable.
+              </li>
+              <li>
+                Each item’s name, quantity, unit price before GST and line
+                subtotal.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="page" id="page-settings">
+          <div class="section-toolbar">
+            <div>
+              <h2>Settings & backup</h2>
+              <p>Customize receipt details and protect your local records.</p>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <div class="panel settings-card">
+              <h2>Business details</h2>
+              <p>Printed on future bills.</p>
+              <form id="businessForm" class="form-stack">
+                <label
+                  >Business / café name<input
+                    id="businessName"
+                    maxlength="120"
+                    required /></label
+                ><label
+                  >Phone number<input
+                    id="businessPhone"
+                    maxlength="30" /></label
+                ><label
+                  >Address<textarea
+                    id="businessAddress"
+                    rows="2"
+                    maxlength="250"
+                  ></textarea></label
+                ><label
+                  >GSTIN (optional)<input
+                    id="businessGstin"
+                    maxlength="20" /></label
+                ><button class="button button-primary" type="submit">
+                  Save business details
+                </button>
+              </form>
+            </div>
+            <div class="panel settings-card">
+              <h2>Backup & restore</h2>
+              <p>
+                Keep a separate copy of products, settings and all saved bills.
+              </p>
+              <button class="button button-primary button-full" id="backupBtn">
+                ↓ Download full backup</button
+              ><label class="button button-soft button-full file-button"
+                >↑ Restore from backup<input
+                  type="file"
+                  id="restoreFile"
+                  accept=".json,application/json"
+                  hidden
+              /></label>
+              <p class="microcopy">
+                Restoring replaces the current local dataset. Export a backup
+                first.
+              </p>
+              <div class="danger-zone">
+                <h3>Clear local data</h3>
+                <p>
+                  Deletes all bills and products from this browser. This cannot
+                  be undone.
+                </p>
+                <button class="button button-danger" id="clearAllData">
+                  Clear all local data
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="panel settings-card">
+            <h2>Offline status</h2>
+            <p id="offlineHelp">
+              The app stores data in this browser using IndexedDB. For reliable
+              offline app-shell loading, serve it once over localhost or HTTPS
+              so the service worker can cache it. Opening index.html directly
+              may limit service-worker features.
+            </p>
+            <div class="status-line">
+              <span class="online-dot"></span
+              ><span id="storageStatus">Checking local database…</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="productModal">
+      <div class="modal">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">CATALOGUE</p>
+            <h2 id="productModalTitle">Add product</h2>
+          </div>
+          <button class="icon-button" data-close-modal aria-label="Close">
+            ×
+          </button>
+        </div>
+        <form id="productForm" class="form-stack">
+          <input type="hidden" id="editProductId" /><label
+            >Item name<input
+              id="productName"
+              required
+              maxlength="120"
+              placeholder="e.g. Cappuccino"
+          /></label>
+          <div class="form-two">
+            <label
+              >Price before GST (₹)<input
+                id="productPrice"
+                type="number"
+                required
+                min="0"
+                max="10000000"
+                step="0.01"
+                placeholder="100.00" /></label
+            ><label
+              >Category<input
+                id="productCategory"
+                maxlength="60"
+                placeholder="Coffee"
+            /></label>
+          </div>
+          <label class="checkbox-line"
+            ><input type="checkbox" id="productActive" checked /> Available for
+            billing</label
+          >
+          <div class="modal-actions">
+            <button type="button" class="button button-soft" data-close-modal>
+              Cancel</button
+            ><button type="submit" class="button button-primary">
+              Save product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="billModal">
+      <div class="modal bill-modal">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">SALE SAVED</p>
+            <h2>Bill completed</h2>
+          </div>
+          <button class="icon-button" data-close-modal aria-label="Close">
+            ×
+          </button>
+        </div>
+        <div id="billPreview"></div>
+        <div class="modal-actions">
+          <button class="button button-soft" data-close-modal>Done</button
+          ><button class="button button-primary" id="printBillBtn">
+            Print bill
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="js/database.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator && location.protocol !== "file:")
+        window.addEventListener("load", () =>
+          navigator.serviceWorker
+            .register("./service-worker.js")
+            .catch(() => {}),
+        );
+    </script>
+  </body>
+</html>

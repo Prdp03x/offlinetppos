@@ -1,0 +1,10 @@
+{
+  "name": "NxOs POS Offline Billing",
+  "short_name": "NxOs POS",
+  "description": "Offline-first point of sale billing and sales history",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fbf6f4",
+  "theme_color": "#2F7D4A",
+  "icons": []
+}
